@@ -7,31 +7,44 @@
     $paOuPg = isset($_POST['paOuPg']) ? $_POST['paOuPg'] : "";
     $nomeArquivo = (isset($_POST['nomeArquivo']) ? $_POST['nomeArquivo'] : "") .".json";
 
+    $arquivoDoUpload = isset($_POST['uploadJson']) ? $_POST['uploadJson'] : "";
+
     if($paOuPg == "pa"){
-        $resultado = [];
+        $resultado = array();
         for($k = 1; $k <= $quantElementos; $k++){
             $resultado[$k] = $a1 + ($k - 1) * $razao;
         }
+        $dadosJson = array (
+            "a1" => $a1,
+            "razao" => $razao,
+            "quantElementos" => $quantElementos,
+            "paOuPg" => $paOuPg,
+            "resultado" => $resultado
+        );
+        gerarJson($dadosJson, $nomeArquivo);
 
     } else if($paOuPg == "pg"){
-        $resultado = [];
+        $resultado = array();
         for($k = 1; $k <= $quantElementos; $k++){
             $resultado[$k] = $a1 * pow($razao, ($k - 1));
         }
+        $dadosJson = array (
+            "a1" => $a1,
+            "razao" => $razao,
+            "quantElementos" => $quantElementos,
+            "paOuPg" => $paOuPg,
+            "resultado" => $resultado
+        );
+        gerarJson($dadosJson, $nomeArquivo);
     }
 
-    $dadosJson = array (
-        "a1" => $a1,
-        "razao" => $razao,
-        "quantElementos" => $quantElementos,
-        "paOuPg" => $paOuPg,
-        "resultado" => $resultado
-    );
-
-    $json = json_encode($dadosJson);
-    $arquivoJson = fopen($nomeArquivo, 'w');
-    fwrite($arquivoJson, $json);
-    fclose($arquivoJson);
+    function gerarJson($dadosJson, $nomeArquivo) {
+        $json = json_encode($dadosJson);
+        $arquivoJson = fopen($nomeArquivo, 'w');
+        fwrite($arquivoJson, $json);
+        fclose($arquivoJson);
+    }
+    
 ?>
 <html lang="pt-br">
 <head>
@@ -106,9 +119,54 @@
         <div class="div-upload-json">
             <h1>Upload Json</h1>
             <form action="" method="post">
-                <input type="file" name="uploadJson">
+                <input type="file" name="uploadJson" id="uploadJson">
                 <input type="submit" class="label" name="submitUpload" id="submitUpload" value="Upload Arquivo">
             </form>
+
+            <?php
+                if(file_exists($arquivoDoUpload)) {
+                    $pegarValoresJson = file_get_contents($arquivoDoUpload);
+                    $dadosUploadJson = json_decode($pegarValoresJson);
+
+                    echo "<br>A1(Valor inicial): ".$dadosUploadJson->a1;
+                    echo "<br>Razão: ".$dadosUploadJson->razao;
+                    echo "<br>Quantidade de elementos: ".$dadosUploadJson->quantElementos;
+                    echo "<br>PA ou PG: ".$dadosUploadJson->paOuPg;
+                    echo "<br>Resultados progressão: ";
+                    foreach($dadosUploadJson->resultado as $valor) {
+                        echo $valor." ";
+                    }
+
+                    $soma = 0;
+                    foreach($dadosUploadJson->resultado as $valor) {
+                        $soma = $soma + $valor;
+                    }
+
+                    $media = $soma / $dadosUploadJson->quantElementos;
+
+                    $mediana = 0;
+                    if ($dadosUploadJson->quantElementos % 2 == 0) {
+                        $mediana = ($dadosUploadJson->resultado[$dadosUploadJson->quantElementos / 2 - 1] + $dadosUploadJson->resultado[$dadosUploadJson->quantElementos / 2]) / 2;
+                    } else {
+                        $cont = 0;
+                        $array = array();
+                        foreach($dadosUploadJson->resultado as $valor) {
+                            $array[$cont] = $valor;
+                            $cont += 1;
+                        }
+                        $mediana = $array[intdiv($dadosUploadJson->quantElementos, 2)];
+                    }
+
+                    echo "<br>Somatória: ".$soma;
+                    echo "<br>Média: ".$media;
+                    echo "<br>Mediana: ".$mediana;
+
+                    $arquivoDoUpload = "";
+                } else {
+                    echo "<br>Arquivo não encontrado";
+                }
+            ?>
+
         </div>
     </div>
 </body>
