@@ -206,7 +206,7 @@
                         $cont += 1;
                     }
                     $alterado = array();
-                    for($k = 0; $k < $dadosUploadJson->quantElementos; $k++) {
+                    for($k = 1; $k < $dadosUploadJson->quantElementos; $k++) {
                         if($array[$k] != $aux[$k]) {
                             $alterado = $array[$k];
                             $valoresAlterados[$k] = $alterado;
@@ -215,8 +215,7 @@
 
                     $tamanhoAlteracao = sizeof($valoresAlterados);
                     if($tamanhoAlteracao > 0) {
-                        $porcentagemAlteracao = number_format(($tamanhoAlteracao / $dadosUploadJson->quantElementos) * 100, 2, ',');
-                        $porcentagemNaoAlterada = number_format((100.0 - (float)$porcentagemAlteracao), 2, ',');
+                        $porcentagemNaoAlterada = number_format((($tamanhoAlteracao - $dadosUploadJson->quantElementos) / $dadosUploadJson->quantElementos) * 100, 2, ',') * -1;
                         echo $porcentagemNaoAlterada."% do arquivo é uma ".$dadosUploadJson->paOuPg;
                     } else {
                         echo "O arquivo não foi alterado.";
