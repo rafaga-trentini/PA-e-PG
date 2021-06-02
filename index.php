@@ -68,23 +68,35 @@
     .div-criar-json {
         width: 20%;
         position: relative;
-        top: 25px;
+        top: -50px;
         left: 25px;
         align-items: center;
+        display: inline-block;
     }
 
     .criar-arquivo-json {
         display: flex;
         flex-direction: column;
         align-items: left;
+        
     }
 
     .div-upload-json {
         width: 20%;
         position: relative;
         top: 25px;
-        left: 25px;;
+        left: 100px;;
         align-items: center;
+        display: inline-block;
+    }
+
+    .div-verificar-upload-json {
+        width: 20%;
+        position: relative;
+        top: 25px;
+        left: 150px;;
+        align-items: center;
+        display: inline-block;
     }
 
 </style>
@@ -157,16 +169,60 @@
                         $mediana = $array[intdiv($dadosUploadJson->quantElementos, 2)];
                     }
 
-                    echo "<br>Somatória: ".$soma;
-                    echo "<br>Média: ".$media;
-                    echo "<br>Mediana: ".$mediana;
+                    echo "<br>Resultado somatória: ".$soma;
+                    echo "<br>Resultado média: ".$media;
+                    echo "<br>Resultado mediana: ".$mediana;
 
-                    $arquivoDoUpload = "";
                 } else {
                     echo "<br>Arquivo não encontrado";
                 }
             ?>
+        </div>
 
+        <div class="div-verificar-upload-json">
+            <?php 
+                if(file_exists($arquivoDoUpload)) {
+                    $pegarValoresJson = file_get_contents($arquivoDoUpload);
+                    $dadosUploadJson = json_decode($pegarValoresJson);
+
+                    $aux = array();
+                    $a1Aux = $dadosUploadJson->a1;
+                    $razaoAux = $dadosUploadJson->razao;
+                    if($dadosUploadJson->paOuPg == "PA") {
+                        for($k = 0; $k < $dadosUploadJson->quantElementos; $k++) {
+                            $aux[$k] = $a1Aux + ($k - 1) * $razaoAux; 
+                        }
+                    } else if($dadosUploadJson->paOuPg == "PG") {
+                        for($k = 0; $k < $dadosUploadJson->quantElementos; $k++) {
+                            $aux[$k] = $a1Aux * pow($razaoAux, ($k - 1)); 
+                        }
+                    }
+
+                    $valoresAlterados = array();
+                    $cont = 0;
+                    $array = array();
+                    foreach($dadosUploadJson->resultado as $valor) {
+                        $array[$cont] = $valor;
+                        $cont += 1;
+                    }
+                    $alterado = array();
+                    for($k = 0; $k < $dadosUploadJson->quantElementos; $k++) {
+                        if($array[$k] != $aux[$k]) {
+                            $alterado = $array[$k];
+                            $valoresAlterados[$k] = $alterado;
+                        }
+                    }
+
+                    $tamanhoAlteracao = sizeof($valoresAlterados);
+                    if($tamanhoAlteracao > 0) {
+                        $porcentagemAlteracao = number_format(($tamanhoAlteracao / $dadosUploadJson->quantElementos) * 100, 2, ',');
+                        $porcentagemNaoAlterada = number_format((100.0 - (float)$porcentagemAlteracao), 2, ',');
+                        echo $porcentagemNaoAlterada."% do arquivo é uma ".$dadosUploadJson->paOuPg;
+                    } else {
+                        echo "O arquivo não foi alterado.";
+                    }
+                }
+            ?>
         </div>
     </div>
 </body>
